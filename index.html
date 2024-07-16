@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Comissão e Pacotes</title>
+    <style>
+        body {
+            background-image: url('https://files.oaiusercontent.com/file-7FI4rJvZWHAXb7jy4R5EybAc?se=2024-07-16T15%3A13%3A17Z&sp=r&sv=2023-11-03&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D832cb580-bbdc-4aed-9e45-a5330b74344d.webp&sig=fzgSsio524mnoejqdbnR6MkYi%2BXon8zBtho%2B1bGeGkQ%3D');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .panel {
+            width: 22%;
+            padding: 20px;
+            border: 2px solid #4B0082;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin: 20px;
+            display: inline-block;
+            vertical-align: top;
+            background-color: rgba(255, 255, 255, 0.9);
+            position: relative;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #4B0082;
+        }
+        button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #FFD700;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="text"], input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #4B0082;
+            border-radius: 5px;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #4B0082;
+        }
+        p {
+            margin: 10px 0;
+            padding: 0;
+        }
+    </style>
+    <script>
+        let exchangeRate = 5.47;
+        let pacoteQuantidades = {
+            5: 0,
+            8: 0,
+            10: 0,
+            20: 0,
+            30: 0,
+            50: 0,
+            100: 0
+        };
+
+        const pacotePrecos = {
+            5: 4.30,
+            8: 6.88,
+            10: 8.60,
+            20: 17.20,
+            30: 25.80,
+            50: 43.00,
+            100: 86.00
+        };
+
+        function updatePacoteQuantidades(pacote, quantidade) {
+            pacoteQuantidades[pacote] = parseInt(quantidade) || 0;
+            updatePacoteTotals();
+        }
+
+        function updatePacoteTotals() {
+            let totalR = 0;
+            let totalD = 0;
+            Object.keys(pacoteQuantidades).forEach(pacote => {
+                const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
+                const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                document.getElementById(`totalR${pacote}`).innerText = subtotalR.toFixed(2);
+                document.getElementById(`totalD${pacote}`).innerText = subtotalD.toFixed(2);
+                totalR += subtotalR;
+                totalD += subtotalD;
+            });
+            document.getElementById('totalRPacotes').innerText = totalR.toFixed(2);
+            document.getElementById('totalDPacotes').innerText = totalD.toFixed(2);
+        }
+
+        function copyToClipboard() {
+            const totalR = document.getElementById('totalRPacotes').innerText;
+            const totalD = document.getElementById('totalDPacotes').innerText;
+            const quantidades = Object.keys(pacoteQuantidades).map(pacote => `Pacote de $${pacote}: ${pacoteQuantidades[pacote]}`).join('\n');
+            const textToCopy = `Total em R$: ${totalR}\nTotal em $: ${totalD}\n${quantidades}`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Informações copiadas para a área de transferência!');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="panel">
+        <h2>Pacote de $5</h2>
+        <label for="pacote5">Quantidade:</label>
+        <input type="number" id="pacote5" value="0" oninput="updatePacoteQuantidades(5, this.value)"><br>
+        <p>Preço com desconto: $4.30</p>
+        <p>Total: R$<span id="totalR5">0.00</span> / $<span id="totalD5">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $8</h2>
+        <label for="pacote8">Quantidade:</label>
+        <input type="number" id="pacote8" value="0" oninput="updatePacoteQuantidades(8, this.value)"><br>
+        <p>Preço com desconto: $6.88</p>
+        <p>Total: R$<span id="totalR8">0.00</span> / $<span id="totalD8">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $10</h2>
+        <label for="pacote10">Quantidade:</label>
+        <input type="number" id="pacote10" value="0" oninput="updatePacoteQuantidades(10, this.value)"><br>
+        <p>Preço com desconto: $8.60</p>
+        <p>Total: R$<span id="totalR10">0.00</span> / $<span id="totalD10">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $20</h2>
+        <label for="pacote20">Quantidade:</label>
+        <input type="number" id="pacote20" value="0" oninput="updatePacoteQuantidades(20, this.value)"><br>
+        <p>Preço com desconto: $17.20</p>
+        <p>Total: R$<span id="totalR20">0.00</span> / $<span id="totalD20">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $30</h2>
+        <label for="pacote30">Quantidade:</label>
+        <input type="number" id="pacote30" value="0" oninput="updatePacoteQuantidades(30, this.value)"><br>
+        <p>Preço com desconto: $25.80</p>
+        <p>Total: R$<span id="totalR30">0.00</span> / $<span id="totalD30">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $50</h2>
+        <label for="pacote50">Quantidade:</label>
+        <input type="number" id="pacote50" value="0" oninput="updatePacoteQuantidades(50, this.value)"><br>
+        <p>Preço com desconto: $43.00</p>
+        <p>Total: R$<span id="totalR50">0.00</span> / $<span id="totalD50">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $100</h2>
+        <label for="pacote100">Quantidade:</label>
+        <input type="number" id="pacote100" value="0" oninput="updatePacoteQuantidades(100, this.value)"><br>
+        <p>Preço com desconto: $86.00</p>
+        <p>Total: R$<span id="totalR100">0.00</span> / $<span id="totalD100">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Total de Todos os Pacotes</h2>
+        <p>Total: R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
+        <button onclick="copyToClipboard()">Copiar Total</button>
+    </div>
+    <div class="panel">
+        <h2>Informações de Pagamento</h2>
+        <p>Pix: CELULAR 14988231270 Nome: Victoria Stefany</p>
+        <p>Mercado Pago: <a href="https://link.mercadopago.com.br/ervindanada" target="_blank">link</a></p>
+        <p>Binance: estrela203@hotmail.com</p>
+    </div>
+</body>
+</html>
