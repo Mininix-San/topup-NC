@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Comissão e Pacotes</title>
     <style>
         body {
-            background-image: url('https://files.oaiusercontent.com/file-7FI4rJvZWHAXb7jy4R5EybAc?se=2024-07-16T15%3A13%3A17Z&sp=r&sv=2023-11-03&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D832cb580-bbdc-4aed-9e45-a5330b74344d.webp&sig=fzgSsio524mnoejqdbnR6MkYi%2BXon8zBtho%2B1bGeGkQ%3D');
+            background-image: url('https://r4.wallpaperflare.com/wallpaper/671/31/673/tv-show-star-vs-the-forces-of-evil-star-butterfly-wallpaper-a920088dc10a7dfbd63728bff031867d.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -19,22 +18,23 @@
             justify-content: center;
         }
         .panel {
+            color: #ddd;
             width: 22%;
             padding: 20px;
-            border: 2px solid #4B0082;
+            border: 2px solid #FF6EC7;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             margin: 20px;
             display: inline-block;
             vertical-align: top;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(33, 33, 33, 0.9);
             position: relative;
         }
         h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
             text-align: center;
-            color: #4B0082;
+            color: #FF6EC7;
         }
         button {
             display: block;
@@ -43,22 +43,24 @@
             border: none;
             border-radius: 5px;
             font-size: 1em;
-            background-color: #FFD700;
+            background-color: #4B0082; /* cor roxo escuro */
             color: white;
             cursor: pointer;
         }
         input[type="text"], input[type="number"] {
+            background-color: #444; /* Fundo escuro para os inputs */
+            color: #ddd; /* Texto claro */
             width: calc(100% - 22px);
             padding: 10px;
             margin: 5px 0;
-            border: 2px solid #4B0082;
+            border: 2px solid #FF6EC7;
             border-radius: 5px;
         }
         label {
             font-weight: bold;
             margin-top: 10px;
             display: block;
-            color: #4B0082;
+            color: #FF6EC7;
         }
         p {
             margin: 10px 0;
@@ -98,6 +100,7 @@
             Object.keys(pacoteQuantidades).forEach(pacote => {
                 const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
                 const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+
                 document.getElementById(`totalR${pacote}`).innerText = subtotalR.toFixed(2);
                 document.getElementById(`totalD${pacote}`).innerText = subtotalD.toFixed(2);
                 totalR += subtotalR;
@@ -105,17 +108,66 @@
             });
             document.getElementById('totalRPacotes').innerText = totalR.toFixed(2);
             document.getElementById('totalDPacotes').innerText = totalD.toFixed(2);
+            atualizarValoresComCartao();
         }
 
-        function copyToClipboard() {
-            const totalR = document.getElementById('totalRPacotes').innerText;
-            const totalD = document.getElementById('totalDPacotes').innerText;
-            const quantidades = Object.keys(pacoteQuantidades).map(pacote => `Pacote de $${pacote}: ${pacoteQuantidades[pacote]}`).join('\n');
-            const textToCopy = `Total em R$: ${totalR}\nTotal em $: ${totalD}\n${quantidades}`;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert('Informações copiadas para a área de transferência!');
-            });
+        function calcularTotalComCartao(total) {
+            return (total * 1.06).toFixed(2);
         }
+
+        function atualizarValoresComCartao() {
+            const totalRPacotes = parseFloat(document.getElementById('totalRPacotes').innerText);
+            const totalDPacotes = parseFloat(document.getElementById('totalDPacotes').innerText);
+            document.getElementById('totalRPacotesCartao').innerText = calcularTotalComCartao(totalRPacotes);
+            document.getElementById('totalDPacotesCartao').innerText = calcularTotalComCartao(totalDPacotes);
+        }
+
+        function copiarInformacoes() {
+            let login = document.getElementById('login').value;
+            let password = document.getElementById('password').value;
+            let nickname = document.getElementById('nickname').value;
+            let level = document.getElementById('level').value;
+            let server = document.getElementById('server').value;
+
+            let texto = '';
+            if (login) texto += `Login: ${login}\n`;
+            if (password) texto += `Password: ${password}\n`;
+            if (nickname) texto += `Nickname: ${nickname}\n`;
+            if (level) texto += `Level: ${level}\n`;
+            if (server) texto += `Server: ${server}\n`;
+
+            let pacotesTexto = '';
+            let totalPacotesR = 0;
+            let totalPacotesD = 0;
+
+            Object.keys(pacoteQuantidades).forEach(pacote => {
+                if (pacoteQuantidades[pacote] > 0) {
+                    const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
+                    const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                    pacotesTexto += `Pacote de $${pacote}: ${pacoteQuantidades[pacote]} (Total R$${subtotalR.toFixed(2)})\n`;
+                    totalPacotesR += subtotalR;
+                    totalPacotesD += subtotalD;
+                }
+            });
+
+            if (pacotesTexto) {
+                texto += `\nPacotes:\n${pacotesTexto}`;
+            }
+
+            texto += `\nTotal dos Pacotes:\nTotal em R$: ${totalPacotesR.toFixed(2)}\nTotal em $: ${totalPacotesD.toFixed(2)}`;
+
+            if (texto) {
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('Informações copiadas para a área de transferência!');
+                }, () => {
+                    alert('Falha ao copiar as informações.');
+                });
+            }
+        }
+
+        window.addEventListener('load', () => {
+            atualizarValoresComCartao();
+        });
     </script>
 </head>
 <body>
@@ -168,16 +220,35 @@
         <p>Preço com desconto: $86.00</p>
         <p>Total: R$<span id="totalR100">0.00</span> / $<span id="totalD100">0.00</span></p>
     </div>
+
+    <!-- Seção de Login -->
+    <div class="panel">
+        <h2>Login e Informações</h2>
+        <label for="login">Login:</label>
+        <input type="text" id="login"><br>
+        <label for="password">Password:</label>
+        <input type="text" id="password"><br>
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname"><br>
+        <label for="level">Level:</label>
+        <input type="text" id="level"><br>
+        <label for="server">Server:</label>
+        <input type="text" id="server"><br>
+    </div>
+
+    <!-- Seção Total -->
     <div class="panel">
         <h2>Total de Todos os Pacotes</h2>
-        <p>Total: R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
-        <button onclick="copyToClipboard()">Copiar Total</button>
+        <p>Total de Pacotes: R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
+        <p>Total com Cartão (6% a mais): R$<span id="totalRPacotesCartao">0.00</span> / $<span id="totalDPacotesCartao">0.00</span></p>
+        <button onclick="copiarInformacoes()">Copiar total + login</button>
     </div>
+
     <div class="panel">
         <h2>Informações de Pagamento</h2>
-        <p>Pix: CELULAR 14988231270 Nome: Victoria Stefany</p>
-        <p>Mercado Pago: <a href="https://link.mercadopago.com.br/ervindanada" target="_blank">link</a></p>
-        <p>Binance: estrela203@hotmail.com</p>
+        <p><strong>Pix:</strong> CELULAR 14988231270 Nome: Victoria Stefany</p>
+        <p><strong>Mercado Pago:</strong> <a href="https://link.mercadopago.com.br/ervindanada" target="_blank">link</a> (Preço será 6% mais caro)</p>
+        <p><strong>Binance:</strong> estrela203@hotmail.com</p>
     </div>
 </body>
 </html>
