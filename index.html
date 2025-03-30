@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Loja Daoshi NC</title>
-<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1lLnjQ3NYt6Bd6WapJ2p0EjzfQJIbB-es">
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1lLnjQ3NYt6Bd6WapJ2p0EjzfQJIbB-es">
     <style>
+        /* ================== CONFIGURAÇÕES GERAIS ================== */
         body {
-            background-image: url('https://lh3.googleusercontent.com/d/1LEZoDldbercjdV4Cpp8qgaknzuRumLid');
+            /* Substitua o link abaixo pelo código de background desejado */
+            background-image: url('https://lh3.googleusercontent.com/d/18Ek1rvgk7MsVKNjgLHWhcH2vaskfGo8c');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
             font-family: 'Comic Sans MS', 'Comic Sans', cursive;
-            color: #333;
+            color: #ddd;
             margin: 0;
             padding: 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
         }
+
+        /* Painéis genéricos */
         .panel {
-            color: #ddd;
             width: 22%;
+            min-width: 220px;
             padding: 20px;
-            border: 2px solid #666666;
+            border: 2px solid #FF6EC7; /* Rosa chamativo */
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             margin: 20px;
@@ -31,12 +35,22 @@
             background-color: rgba(33, 33, 33, 0.9);
             position: relative;
         }
+
+        /* Painel maior (para textos de pagamento, etc.) */
+        .panel-large {
+            width: 80%;
+            min-width: 320px;
+        }
+
+        /* Títulos */
         h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
             text-align: center;
-            color: #cb39be;
+            color: #cb39be; /* Rosa/roxo vivo */
         }
+
+        /* Botões */
         button {
             display: block;
             margin: 10px 0;
@@ -44,31 +58,163 @@
             border: none;
             border-radius: 5px;
             font-size: 1em;
-            background-color: #15025d; /* cor roxo escuro */
+            background-color: #15025d; /* Roxo escuro */
             color: white;
             cursor: pointer;
         }
-        input[type="text"], input[type="number"] {
-            background-color: #444; /* Fundo escuro para os inputs */
-            color: #ddd; /* Texto claro */
+
+        /* Inputs de texto e numéricos */
+        input[type="text"],
+        input[type="number"] {
+            background-color: #444; /* Fundo escuro */
+            color: #ddd;           /* Texto claro */
             width: calc(100% - 22px);
             padding: 10px;
             margin: 5px 0;
-            border: 2px solid #FF6EC7;
+            border: 2px solid #FF6EC7; /* Borda rosa */
             border-radius: 5px;
         }
+
         label {
             font-weight: bold;
             margin-top: 10px;
             display: block;
-            color: #cb39be;
+            color: #FF6EC7; /* Rosa chamativo */
         }
+
         p {
             margin: 10px 0;
             padding: 0;
+            color: #ddd;
+        }
+
+        /* Para o botão invisível (se quiser reaproveitar) */
+        .invisible-button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Flores ou partículas (caso queira usar a animação do primeiro código) */
+        .flower {
+            position: absolute;
+            top: -50px;
+            font-size: 24px;
+            pointer-events: none;
+            animation: fall linear infinite, fadeOut linear infinite;
+        }
+
+        @keyframes fall {
+            from {
+                transform: translateY(0px) rotate(0deg);
+            }
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
         }
     </style>
+
     <script>
+        /* ================== PARTE 1: SISTEMA DE DIAMANTES ================== */
+        // Agora: 30 R$ e 5.20 USDT a cada 1000 diamantes
+        const diamondRateR = 30 / 1000;    // 0.03
+        const diamondRateD = 5.20 / 1000;  // 0.0052
+
+        let listaDiamantesGlobal = [];
+
+        function updateDiamanteCalculations() {
+            const quantidade = parseInt(document.getElementById('quantidadeDiamantes').value) || 0;
+
+            // Cálculo simples de R$ e USDT
+            const totalR = (quantidade * diamondRateR);
+            const totalD = (quantidade * diamondRateD);
+
+            // Calcula a lista de quantidades a anunciar
+            listaDiamantesGlobal = calcularListaDiamantes(quantidade);
+
+            document.getElementById('totalRDiamantes').innerText = totalR.toFixed(2);
+            document.getElementById('totalDDiamantes').innerText = totalD.toFixed(2);
+            document.getElementById('quantidadeAnunciadaDiamantes').innerText = listaDiamantesGlobal.join(', ');
+        }
+
+        function calcularListaDiamantes(quantidade) {
+            // Exemplo: quantidade + 5.3% para anunciar
+            const quantidadeAnunciada = Math.floor(quantidade + (quantidade * 5.3 / 100));
+
+            // Se a quantidade >= 20.000, dividimos em blocos de 5000; caso contrário, 2500
+            let divisao;
+            if (quantidade >= 20000) {
+                divisao = Math.ceil(quantidade / 5000);
+            } else {
+                divisao = Math.ceil(quantidade / 2500);
+            }
+            return dividirEmPartes(quantidadeAnunciada, divisao, quantidade);
+        }
+
+        function dividirEmPartes(total, partes, quantidade) {
+            let min, max;
+            // Se >= 20000, usa faixa [90% ~ 110%], senão [85% ~ 115%]
+            if (quantidade >= 20000) {
+                min = Math.floor(total / partes * 0.9);
+                max = Math.ceil(total / partes * 1.1);
+            } else {
+                min = Math.floor(total / partes * 0.85);
+                max = Math.ceil(total / partes * 1.15);
+            }
+
+            let resultado = [];
+            let soma = 0;
+
+            for (let i = 0; i < partes - 1; i++) {
+                const valor = Math.floor(Math.random() * (max - min + 1)) + min;
+
+                if (soma + valor >= total) {
+                    resultado.push(total - soma);
+                    return resultado;
+                }
+                resultado.push(valor);
+                soma += valor;
+            }
+
+            const ultimaParte = total - soma;
+            if (ultimaParte > 0) {
+                resultado.push(ultimaParte);
+            } else {
+                resultado.push(min);
+            }
+
+            return resultado;
+        }
+
+        function copyDiamondTotalsToClipboard() {
+            const totalR = document.getElementById('totalRDiamantes').innerText;
+            const totalD = document.getElementById('totalDDiamantes').innerText;
+            const quantidadeAnunciada = document.getElementById('quantidadeAnunciadaDiamantes').innerText;
+            const servidor = document.getElementById('servidorDiamantes').value;
+            const textToCopy = `Servidor: ${servidor}\n` +
+                               `Total em R$: ${totalR}\n` +
+                               `Total em USDT: ${totalD}\n` +
+                               `Quantidade de Diamantes a anunciar: ${quantidadeAnunciada}`;
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => alert('Totais de Diamantes copiados para a área de transferência'))
+                .catch(err => alert('Erro ao copiar texto: ', err));
+        }
+
+        /* ================== PARTE 2: SISTEMA DE PACOTES (código do NC) ================== */
         let exchangeRate = 5.79;
         let pacoteQuantidades = {
             5: 0,
@@ -109,18 +255,6 @@
             });
             document.getElementById('totalRPacotes').innerText = totalR.toFixed(2);
             document.getElementById('totalDPacotes').innerText = totalD.toFixed(2);
-            atualizarValoresComCartao();
-        }
-
-        function calcularTotalComCartao(total) {
-            return (total * 1.06).toFixed(2);
-        }
-
-        function atualizarValoresComCartao() {
-            const totalRPacotes = parseFloat(document.getElementById('totalRPacotes').innerText);
-            const totalDPacotes = parseFloat(document.getElementById('totalDPacotes').innerText);
-            document.getElementById('totalRPacotesCartao').innerText = calcularTotalComCartao(totalRPacotes);
-            document.getElementById('totalDPacotesCartao').innerText = calcularTotalComCartao(totalDPacotes);
         }
 
         function copiarInformacoes() {
@@ -165,13 +299,35 @@
                 });
             }
         }
-
-        window.addEventListener('load', () => {
-            atualizarValoresComCartao();
-        });
     </script>
 </head>
 <body>
+
+    <!-- ================== NOVO PAINEL DE DIAMANTES ================== -->
+    <div class="panel">
+        <h2>💎 Diamantes 💎</h2>
+        <label for="quantidadeDiamantes">Quantidade de Diamantes:</label>
+        <input 
+            type="number" 
+            id="quantidadeDiamantes" 
+            placeholder="Ex: 1000" 
+            oninput="updateDiamanteCalculations()"
+        ><br>
+
+        <label for="servidorDiamantes">Servidor:</label>
+        <input type="text" id="servidorDiamantes" placeholder="Insira o servidor"><br>
+
+        <p>Total em R$: <span id="totalRDiamantes">0.00</span></p>
+        <p>Total em USDT: <span id="totalDDiamantes">0.00</span></p>
+        <p>Quantidade de Diamantes a anunciar: <span id="quantidadeAnunciadaDiamantes">0</span></p>
+		<p>Quantidade de Diamantes a anunciar: </p>
+
+        <button onclick="copyDiamondTotalsToClipboard()">Copiar Totais de Diamantes</button>
+    </div>
+
+    <!-- ================== PAINÉIS ORIGINAIS DO SEGUNDO CÓDIGO ================== -->
+
+    <!-- Pacote de $5 -->
     <div class="panel">
         <h2>Pacote de $5</h2>
         <label for="pacote5">Quantidade:</label>
@@ -179,6 +335,8 @@
         <p>Preço com desconto: $4.10</p>
         <p>Total: R$<span id="totalR5">0.00</span> / $<span id="totalD5">0.00</span></p>
     </div>
+
+    <!-- Pacote de $8 -->
     <div class="panel">
         <h2>Pacote de $8</h2>
         <label for="pacote8">Quantidade:</label>
@@ -186,6 +344,8 @@
         <p>Preço com desconto: $6.56</p>
         <p>Total: R$<span id="totalR8">0.00</span> / $<span id="totalD8">0.00</span></p>
     </div>
+
+    <!-- Pacote de $10 -->
     <div class="panel">
         <h2>Pacote de $10</h2>
         <label for="pacote10">Quantidade:</label>
@@ -193,6 +353,8 @@
         <p>Preço com desconto: $8.20</p>
         <p>Total: R$<span id="totalR10">0.00</span> / $<span id="totalD10">0.00</span></p>
     </div>
+
+    <!-- Pacote de $20 -->
     <div class="panel">
         <h2>Pacote de $20</h2>
         <label for="pacote20">Quantidade:</label>
@@ -200,6 +362,8 @@
         <p>Preço com desconto: $16.40</p>
         <p>Total: R$<span id="totalR20">0.00</span> / $<span id="totalD20">0.00</span></p>
     </div>
+
+    <!-- Pacote de $30 -->
     <div class="panel">
         <h2>Pacote de $30</h2>
         <label for="pacote30">Quantidade:</label>
@@ -207,6 +371,8 @@
         <p>Preço com desconto: $24.60</p>
         <p>Total: R$<span id="totalR30">0.00</span> / $<span id="totalD30">0.00</span></p>
     </div>
+
+    <!-- Pacote de $50 -->
     <div class="panel">
         <h2>Pacote de $50</h2>
         <label for="pacote50">Quantidade:</label>
@@ -214,6 +380,8 @@
         <p>Preço com desconto: $41.00</p>
         <p>Total: R$<span id="totalR50">0.00</span> / $<span id="totalD50">0.00</span></p>
     </div>
+
+    <!-- Pacote de $100 -->
     <div class="panel">
         <h2>Pacote de $100</h2>
         <label for="pacote100">Quantidade:</label>
@@ -244,11 +412,14 @@
         <button onclick="copiarInformacoes()">Copiar total + login</button>
     </div>
 
-    <div class="panel">
+    <!-- Informações de Pagamento -->
+    <div class="panel panel-large">
         <h2>Informações de Pagamento</h2>
         <p><strong>Pix:</strong> CELULAR 14988231270 Nome: DAOSHI TRADE</p>
-        <p><strong>Mercado Pago:</strong> <a href="https://link.mercadopago.com.br/ervindanada" target="_blank">link</a> (Preço será 6% mais caro)</p>
+        
         <p><strong>Binance:</strong> estrela203@hotmail.com</p>
+        <p><strong>Observação:</strong> Para Diamantes, cada 1000 = R$30 ou USDT 5.20.</p>
     </div>
+
 </body>
 </html>
