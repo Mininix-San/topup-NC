@@ -7,7 +7,6 @@
     <style>
         /* ================== CONFIGURAÇÕES GERAIS ================== */
         body {
-            /* Substitua o link abaixo pelo código de background desejado */
             background-image: url('https://lh3.googleusercontent.com/d/18Ek1rvgk7MsVKNjgLHWhcH2vaskfGo8c');
             background-size: cover;
             background-repeat: no-repeat;
@@ -20,13 +19,12 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-
         /* Painéis genéricos */
         .panel {
             width: 22%;
             min-width: 220px;
             padding: 20px;
-            border: 2px solid #FF6EC7; /* Rosa chamativo */
+            border: 2px solid #FF6EC7;
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             margin: 20px;
@@ -35,21 +33,18 @@
             background-color: rgba(33, 33, 33, 0.9);
             position: relative;
         }
-
         /* Painel maior (para textos de pagamento, etc.) */
         .panel-large {
             width: 80%;
             min-width: 320px;
         }
-
         /* Títulos */
         h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
             text-align: center;
-            color: #cb39be; /* Rosa/roxo vivo */
+            color: #cb39be;
         }
-
         /* Botões */
         button {
             display: block;
@@ -58,104 +53,69 @@
             border: none;
             border-radius: 5px;
             font-size: 1em;
-            background-color: #15025d; /* Roxo escuro */
+            background-color: #15025d;
             color: white;
             cursor: pointer;
         }
-
-        /* Inputs de texto e numéricos */
+        /* Inputs */
         input[type="text"],
         input[type="number"] {
-            background-color: #444; /* Fundo escuro */
-            color: #ddd;           /* Texto claro */
+            background-color: #444;
+            color: #ddd;
             width: calc(100% - 22px);
             padding: 10px;
             margin: 5px 0;
-            border: 2px solid #FF6EC7; /* Borda rosa */
+            border: 2px solid #FF6EC7;
             border-radius: 5px;
         }
-
         label {
             font-weight: bold;
             margin-top: 10px;
             display: block;
-            color: #FF6EC7; /* Rosa chamativo */
+            color: #FF6EC7;
         }
-
         p {
             margin: 10px 0;
             padding: 0;
             color: #ddd;
         }
-
-        /* Para o botão invisível (se quiser reaproveitar) */
-        .invisible-button {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 30px;
-            height: 30px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
+        /* Espaço para a imagem abaixo do botão, se necessário */
+        .panel img {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+            display: block;
         }
-
-        /* Flores ou partículas (caso queira usar a animação do primeiro código) */
-        .flower {
-            position: absolute;
-            top: -50px;
-            font-size: 24px;
-            pointer-events: none;
-            animation: fall linear infinite, fadeOut linear infinite;
-        }
-
-        @keyframes fall {
-            from {
-                transform: translateY(0px) rotate(0deg);
-            }
-            to {
-                transform: translateY(100vh) rotate(360deg);
-            }
-        }
-
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
+        /* Exibição da cotação no canto */
+        #cotacao {
+            position: fixed;
+            bottom: 5px;
+            right: 10px;
+            font-size: 0.9em;
+            color: #ccc;
+            opacity: 0.8;
         }
     </style>
-
     <script>
-        /* ================== PARTE 1: SISTEMA DE DIAMANTES ================== */
-        // Agora: 30 R$ e 5.20 USDT a cada 1000 diamantes
-        const diamondRateR = 30 / 1000;    // 0.03
-        const diamondRateD = 5.20 / 1000;  // 0.0052
-
+        /* ================== PARTE 1: SISTEMA DE DIAMANTES (Valores fixos) ================== */
+        // Cada 1000 diamantes: fixo R$30 ou USDT 5.20
+        const diamondRateR = 30 / 1000;
+        const diamondRateD = 5.20 / 1000;
         let listaDiamantesGlobal = [];
 
         function updateDiamanteCalculations() {
             const quantidade = parseInt(document.getElementById('quantidadeDiamantes').value) || 0;
-
-            // Cálculo simples de R$ e USDT
-            const totalR = (quantidade * diamondRateR);
-            const totalD = (quantidade * diamondRateD);
-
-            // Calcula a lista de quantidades a anunciar
+            const totalR = quantidade * diamondRateR;
+            const totalD = quantidade * diamondRateD;
             listaDiamantesGlobal = calcularListaDiamantes(quantidade);
-
             document.getElementById('totalRDiamantes').innerText = totalR.toFixed(2);
             document.getElementById('totalDDiamantes').innerText = totalD.toFixed(2);
             document.getElementById('quantidadeAnunciadaDiamantes').innerText = listaDiamantesGlobal.join(', ');
         }
 
         function calcularListaDiamantes(quantidade) {
-            // Exemplo: quantidade + 5.3% para anunciar
+            // Exemplo: incrementar 5.3%
             const quantidadeAnunciada = Math.floor(quantidade + (quantidade * 5.3 / 100));
-
-            // Se a quantidade >= 20.000, dividimos em blocos de 5000; caso contrário, 2500
             let divisao;
             if (quantidade >= 20000) {
                 divisao = Math.ceil(quantidade / 5000);
@@ -167,7 +127,6 @@
 
         function dividirEmPartes(total, partes, quantidade) {
             let min, max;
-            // Se >= 20000, usa faixa [90% ~ 110%], senão [85% ~ 115%]
             if (quantidade >= 20000) {
                 min = Math.floor(total / partes * 0.9);
                 max = Math.ceil(total / partes * 1.1);
@@ -175,13 +134,9 @@
                 min = Math.floor(total / partes * 0.85);
                 max = Math.ceil(total / partes * 1.15);
             }
-
-            let resultado = [];
-            let soma = 0;
-
+            let resultado = [], soma = 0;
             for (let i = 0; i < partes - 1; i++) {
                 const valor = Math.floor(Math.random() * (max - min + 1)) + min;
-
                 if (soma + valor >= total) {
                     resultado.push(total - soma);
                     return resultado;
@@ -189,14 +144,8 @@
                 resultado.push(valor);
                 soma += valor;
             }
-
             const ultimaParte = total - soma;
-            if (ultimaParte > 0) {
-                resultado.push(ultimaParte);
-            } else {
-                resultado.push(min);
-            }
-
+            resultado.push(ultimaParte > 0 ? ultimaParte : min);
             return resultado;
         }
 
@@ -205,17 +154,14 @@
             const totalD = document.getElementById('totalDDiamantes').innerText;
             const quantidadeAnunciada = document.getElementById('quantidadeAnunciadaDiamantes').innerText;
             const servidor = document.getElementById('servidorDiamantes').value;
-            const textToCopy = `Servidor: ${servidor}\n` +
-                               `Total em R$: ${totalR}\n` +
-                               `Total em USDT: ${totalD}\n` +
-                               `Quantidade de Diamantes a anunciar: ${quantidadeAnunciada}`;
+            const textToCopy = `Servidor: ${servidor}\nTotal em R$: ${totalR}\nTotal em USDT: ${totalD}\nQuantidade de Diamantes a anunciar: ${quantidadeAnunciada}`;
             navigator.clipboard.writeText(textToCopy)
                 .then(() => alert('Totais de Diamantes copiados para a área de transferência'))
-                .catch(err => alert('Erro ao copiar texto: ', err));
+                .catch(err => alert('Erro ao copiar texto: ' + err));
         }
 
-        /* ================== PARTE 2: SISTEMA DE PACOTES (código do NC) ================== */
-        let exchangeRate = 5.86;
+        /* ================== PARTE 2: SISTEMA DE PACOTES ================== */
+        let exchangeRate = 5.86; // Valor default; será atualizado pela Binance
         let pacoteQuantidades = {
             5: 0,
             8: 0,
@@ -226,6 +172,7 @@
             100: 0
         };
 
+        // Valores em USDT fixos, conforme informado
         const pacotePrecos = {
             5: 4.10,
             8: 6.56,
@@ -242,16 +189,14 @@
         }
 
         function updatePacoteTotals() {
-            let totalR = 0;
-            let totalD = 0;
+            let totalR = 0, totalD = 0;
             Object.keys(pacoteQuantidades).forEach(pacote => {
-                const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
-                const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
-
-                document.getElementById(`totalR${pacote}`).innerText = subtotalR.toFixed(2);
-                document.getElementById(`totalD${pacote}`).innerText = subtotalD.toFixed(2);
-                totalR += subtotalR;
-                totalD += subtotalD;
+                const subtotalUSDT = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                const subtotalBRL = subtotalUSDT * exchangeRate;
+                document.getElementById(`totalR${pacote}`).innerText = subtotalBRL.toFixed(2);
+                document.getElementById(`totalD${pacote}`).innerText = subtotalUSDT.toFixed(2);
+                totalR += subtotalBRL;
+                totalD += subtotalUSDT;
             });
             document.getElementById('totalRPacotes').innerText = totalR.toFixed(2);
             document.getElementById('totalDPacotes').innerText = totalD.toFixed(2);
@@ -272,60 +217,62 @@
             if (server) texto += `Server: ${server}\n`;
 
             let pacotesTexto = '';
-            let totalPacotesR = 0;
-            let totalPacotesD = 0;
-
+            let totalPacotesR = 0, totalPacotesD = 0;
             Object.keys(pacoteQuantidades).forEach(pacote => {
                 if (pacoteQuantidades[pacote] > 0) {
-                    const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
-                    const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
-                    pacotesTexto += `Pacote de $${pacote}: ${pacoteQuantidades[pacote]} (Total R$${subtotalR.toFixed(2)})\n`;
-                    totalPacotesR += subtotalR;
-                    totalPacotesD += subtotalD;
+                    const subtotalUSDT = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                    const subtotalBRL = subtotalUSDT * exchangeRate;
+                    pacotesTexto += `Pacote de $${pacote}: ${pacoteQuantidades[pacote]} (Total R$${subtotalBRL.toFixed(2)})\n`;
+                    totalPacotesR += subtotalBRL;
+                    totalPacotesD += subtotalUSDT;
                 }
             });
-
-            if (pacotesTexto) {
-                texto += `\nPacotes:\n${pacotesTexto}`;
-            }
-
+            if (pacotesTexto) texto += `\nPacotes:\n${pacotesTexto}`;
             texto += `\nTotal dos Pacotes:\nTotal em R$: ${totalPacotesR.toFixed(2)}\nTotal em $: ${totalPacotesD.toFixed(2)}`;
-
             if (texto) {
-                navigator.clipboard.writeText(texto).then(() => {
-                    alert('Informações copiadas para a área de transferência!');
-                }, () => {
-                    alert('Falha ao copiar as informações.');
-                });
+                navigator.clipboard.writeText(texto)
+                    .then(() => alert('Informações copiadas para a área de transferência!'))
+                    .catch(() => alert('Falha ao copiar as informações.'));
             }
         }
+
+        // Função para buscar a cotação atual do USDT/BRL na Binance e atualizar os valores dos pacotes
+        async function atualizarCotacao() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
+                if (!response.ok) throw new Error("Erro na requisição");
+                const data = await response.json();
+                exchangeRate = parseFloat(data.price);
+                document.getElementById('cotacao').innerText = `Taxa atual USD-BRL: R$ ${exchangeRate.toFixed(4)}`;
+                updatePacoteTotals();
+            } catch (error) {
+                console.error('Erro ao atualizar cotação:', error);
+                document.getElementById('cotacao').innerText = 'Erro ao carregar cotação';
+            }
+        }
+        
+        // Atualiza a cotação ao carregar a página
+        window.addEventListener('load', atualizarCotacao);
     </script>
 </head>
 <body>
+    <!-- Exibição da cotação dinâmica no canto -->
+    <div id="cotacao">Carregando cotação...</div>
 
-    <!-- ================== NOVO PAINEL DE DIAMANTES ================== -->
+    <!-- ================== PAINEL DE DIAMANTES (Valores fixos) ================== -->
     <div class="panel">
         <h2>💎 Diamantes 💎</h2>
         <label for="quantidadeDiamantes">Quantidade de Diamantes:</label>
-        <input 
-            type="number" 
-            id="quantidadeDiamantes" 
-            placeholder="Ex: 1000" 
-            oninput="updateDiamanteCalculations()"
-        ><br>
-
+        <input type="number" id="quantidadeDiamantes" placeholder="Ex: 1000" oninput="updateDiamanteCalculations()"><br>
         <label for="servidorDiamantes">Servidor:</label>
         <input type="text" id="servidorDiamantes" placeholder="Insira o servidor"><br>
-
         <p>Total em R$: <span id="totalRDiamantes">0.00</span></p>
         <p>Total em USDT: <span id="totalDDiamantes">0.00</span></p>
         <p>Quantidade de Diamantes a anunciar: <span id="quantidadeAnunciadaDiamantes">0</span></p>
-	
-
         <button onclick="copyDiamondTotalsToClipboard()">Copiar Totais de Diamantes</button>
     </div>
 
-    <!-- ================== PAINÉIS ORIGINAIS DO SEGUNDO CÓDIGO ================== -->
+    <!-- ================== PAINÉIS DOS PACOTES ================== -->
 
     <!-- Pacote de $5 -->
     <div class="panel">
@@ -416,10 +363,8 @@
     <div class="panel panel-large">
         <h2>Informações de Pagamento</h2>
         <p><strong>Pix:</strong> CELULAR 14988231270 Nome: DAOSHI TRADE</p>
-        
         <p><strong>Binance:</strong> estrela203@hotmail.com</p>
         <p><strong>Observação:</strong> Para Diamantes, cada 1000 = R$30 ou USDT 5.20.</p>
     </div>
-
 </body>
 </html>
