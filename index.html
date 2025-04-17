@@ -14,91 +14,106 @@
             font-family: 'Comic Sans MS', 'Comic Sans', cursive;
             color: #ddd;
             margin: 0;
-            padding: 0;
+            padding: 10px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            align-content: flex-start;
+            height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
         }
         /* Painéis genéricos */
         .panel {
-            width: 22%;
-            min-width: 220px;
-            padding: 20px;
+            width: 18%;
+            min-width: 180px;
+            padding: 10px;
             border: 2px solid #FF6EC7;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-            margin: 20px;
-            display: inline-block;
-            vertical-align: top;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            margin: 10px;
+            display: inline-flex;
+            flex-direction: column;
             background-color: rgba(33, 33, 33, 0.9);
-            position: relative;
+            box-sizing: border-box;
+            font-size: 0.9em;
         }
-        /* Painel maior (para textos de pagamento, etc.) */
+        /* Painel maior (para informações de pagamento) */
         .panel-large {
-            width: 80%;
-            min-width: 320px;
+            width: 90%;
+            min-width: 280px;
+            padding: 10px;
+            margin: 10px auto;
         }
         /* Títulos */
         h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
+            font-size: 1.2em;
+            margin: 5px 0;
             text-align: center;
             color: #cb39be;
         }
         /* Botões */
         button {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
+            margin: 5px 0;
+            padding: 8px;
             border: none;
             border-radius: 5px;
-            font-size: 1em;
+            font-size: 0.9em;
             background-color: #15025d;
             color: white;
             cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
         }
         /* Inputs */
         input[type="text"],
         input[type="number"] {
             background-color: #444;
             color: #ddd;
-            width: calc(100% - 22px);
-            padding: 10px;
+            width: 100%;
+            padding: 8px;
             margin: 5px 0;
             border: 2px solid #FF6EC7;
             border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 0.9em;
         }
         label {
             font-weight: bold;
-            margin-top: 10px;
+            margin: 5px 0 2px;
             display: block;
             color: #FF6EC7;
+            font-size: 0.9em;
         }
         p {
-            margin: 10px 0;
+            margin: 5px 0;
             padding: 0;
             color: #ddd;
-        }
-        /* Espaço para a imagem abaixo do botão, se necessário */
-        .panel img {
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 10px;
-            display: block;
+            font-size: 0.9em;
         }
         /* Exibição da cotação no canto */
         #cotacao {
             position: fixed;
             bottom: 5px;
             right: 10px;
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #ccc;
             opacity: 0.8;
+            z-index: 1000;
+        }
+        /* Media query para telas menores */
+        @media (max-width: 768px) {
+            .panel {
+                width: 45%;
+                min-width: 160px;
+            }
+            .panel-large {
+                width: 95%;
+            }
         }
     </style>
     <script>
         /* ================== PARTE 1: SISTEMA DE DIAMANTES (Valores fixos) ================== */
-        // Cada 1000 diamantes: fixo R$30 ou USDT 5.20
         const diamondRateR = 30 / 1000;
         const diamondRateD = 5.20 / 1000;
         let listaDiamantesGlobal = [];
@@ -114,7 +129,6 @@
         }
 
         function calcularListaDiamantes(quantidade) {
-            // Exemplo: incrementar 5.3%
             const quantidadeAnunciada = Math.floor(quantidade + (quantidade * 5.3 / 100));
             let divisao;
             if (quantidade >= 20000) {
@@ -161,7 +175,7 @@
         }
 
         /* ================== PARTE 2: SISTEMA DE PACOTES ================== */
-        let exchangeRate = 5.86; // Valor default; será atualizado pela Binance
+        let exchangeRate = 5.86;
         let pacoteQuantidades = {
             5: 0,
             8: 0,
@@ -172,7 +186,6 @@
             100: 0
         };
 
-        // Valores em USDT fixos, conforme informado
         const pacotePrecos = {
             5: 4.10,
             8: 6.56,
@@ -236,7 +249,6 @@
             }
         }
 
-        // Função para buscar a cotação atual do USDT/BRL na Binance e atualizar os valores dos pacotes
         async function atualizarCotacao() {
             try {
                 const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
@@ -250,8 +262,7 @@
                 document.getElementById('cotacao').innerText = 'Erro ao carregar cotação';
             }
         }
-        
-        // Atualiza a cotação ao carregar a página
+
         window.addEventListener('load', atualizarCotacao);
     </script>
 </head>
@@ -262,109 +273,96 @@
     <!-- ================== PAINEL DE DIAMANTES (Valores fixos) ================== -->
     <div class="panel">
         <h2>💎 Diamantes 💎</h2>
-        <label for="quantidadeDiamantes">Quantidade de Diamantes:</label>
-        <input type="number" id="quantidadeDiamantes" placeholder="Ex: 1000" oninput="updateDiamanteCalculations()"><br>
+        <label for="quantidadeDiamantes">Quantidade:</label>
+        <input type="number" id="quantidadeDiamantes" placeholder="Ex: 1000" oninput="updateDiamanteCalculations()">
         <label for="servidorDiamantes">Servidor:</label>
-        <input type="text" id="servidorDiamantes" placeholder="Insira o servidor"><br>
-        <p>Total em R$: <span id="totalRDiamantes">0.00</span></p>
-        <p>Total em USDT: <span id="totalDDiamantes">0.00</span></p>
-        <p>Quantidade de Diamantes a anunciar: <span id="quantidadeAnunciadaDiamantes">0</span></p>
-        <button onclick="copyDiamondTotalsToClipboard()">Copiar Totais de Diamantes</button>
+        <input type="text" id="servidorDiamantes" placeholder="Insira o servidor">
+        <p>R$: <span id="totalRDiamantes">0.00</span></p>
+        <p>USDT: <span id="totalDDiamantes">0.00</span></p>
+        <p>Anunciar: <span id="quantidadeAnunciadaDiamantes">0</span></p>
+        <button onclick="copyDiamondTotalsToClipboard()">Copiar</button>
     </div>
 
-    <!-- ================== PAINÉIS DOS PACOTES ================== -->
+    <!-- ================== PAINÉIS COMBINADOS DE PACOTES ================== -->
 
-    <!-- Pacote de $5 -->
+    <!-- Painel Combinado 1: Pacotes de $5, $8 e $10 -->
     <div class="panel">
-        <h2>Pacote de $5</h2>
-        <label for="pacote5">Quantidade:</label>
-        <input type="number" id="pacote5" value="0" oninput="updatePacoteQuantidades(5, this.value)"><br>
-        <p>Preço com desconto: $4.10</p>
-        <p>Total: R$<span id="totalR5">0.00</span> / $<span id="totalD5">0.00</span></p>
+        <h2>Pacotes Básicos</h2>
+        <!-- Pacote de $5 -->
+        <label for="pacote5">$5:</label>
+        <input type="number" id="pacote5" value="0" oninput="updatePacoteQuantidades(5, this.value)">
+        <p>Desconto: $4.10</p>
+        <p>R$<span id="totalR5">0.00</span> / $<span id="totalD5">0.00</span></p>
+        <!-- Pacote de $8 -->
+        <label for="pacote8">$8:</label>
+        <input type="number" id="pacote8" value="0" oninput="updatePacoteQuantidades(8, this.value)">
+        <p>Desconto: $6.56</p>
+        <p>R$<span id="totalR8">0.00</span> / $<span id="totalD8">0.00</span></p>
+        <!-- Pacote de $10 -->
+        <label for="pacote10">$10:</label>
+        <input type="number" id="pacote10" value="0" oninput="updatePacoteQuantidades(10, this.value)">
+        <p>Desconto: $8.20</p>
+        <p>R$<span id="totalR10">0.00</span> / $<span id="totalD10">0.00</span></p>
     </div>
 
-    <!-- Pacote de $8 -->
+    <!-- Painel Combinado 2: Pacotes de $20 e $30 -->
     <div class="panel">
-        <h2>Pacote de $8</h2>
-        <label for="pacote8">Quantidade:</label>
-        <input type="number" id="pacote8" value="0" oninput="updatePacoteQuantidades(8, this.value)"><br>
-        <p>Preço com desconto: $6.56</p>
-        <p>Total: R$<span id="totalR8">0.00</span> / $<span id="totalD8">0.00</span></p>
+        <h2>Pacotes Intermediários</h2>
+        <!-- Pacote de $20 -->
+        <label for="pacote20">$20:</label>
+        <input type="number" id="pacote20" value="0" oninput="updatePacoteQuantidades(20, this.value)">
+        <p>Desconto: $16.40</p>
+        <p>R$<span id="totalR20">0.00</span> / $<span id="totalD20">0.00</span></p>
+        <!-- Pacote de $30 -->
+        <label for="pacote30">$30:</label>
+        <input type="number" id="pacote30" value="0" oninput="updatePacoteQuantidades(30, this.value)">
+        <p>Desconto: $24.60</p>
+        <p>R$<span id="totalR30">0.00</span> / $<span id="totalD30">0.00</span></p>
     </div>
 
-    <!-- Pacote de $10 -->
+    <!-- Painel Combinado 3: Pacotes de $50 e $100 -->
     <div class="panel">
-        <h2>Pacote de $10</h2>
-        <label for="pacote10">Quantidade:</label>
-        <input type="number" id="pacote10" value="0" oninput="updatePacoteQuantidades(10, this.value)"><br>
-        <p>Preço com desconto: $8.20</p>
-        <p>Total: R$<span id="totalR10">0.00</span> / $<span id="totalD10">0.00</span></p>
-    </div>
-
-    <!-- Pacote de $20 -->
-    <div class="panel">
-        <h2>Pacote de $20</h2>
-        <label for="pacote20">Quantidade:</label>
-        <input type="number" id="pacote20" value="0" oninput="updatePacoteQuantidades(20, this.value)"><br>
-        <p>Preço com desconto: $16.40</p>
-        <p>Total: R$<span id="totalR20">0.00</span> / $<span id="totalD20">0.00</span></p>
-    </div>
-
-    <!-- Pacote de $30 -->
-    <div class="panel">
-        <h2>Pacote de $30</h2>
-        <label for="pacote30">Quantidade:</label>
-        <input type="number" id="pacote30" value="0" oninput="updatePacoteQuantidades(30, this.value)"><br>
-        <p>Preço com desconto: $24.60</p>
-        <p>Total: R$<span id="totalR30">0.00</span> / $<span id="totalD30">0.00</span></p>
-    </div>
-
-    <!-- Pacote de $50 -->
-    <div class="panel">
-        <h2>Pacote de $50</h2>
-        <label for="pacote50">Quantidade:</label>
-        <input type="number" id="pacote50" value="0" oninput="updatePacoteQuantidades(50, this.value)"><br>
-        <p>Preço com desconto: $41.00</p>
-        <p>Total: R$<span id="totalR50">0.00</span> / $<span id="totalD50">0.00</span></p>
-    </div>
-
-    <!-- Pacote de $100 -->
-    <div class="panel">
-        <h2>Pacote de $100</h2>
-        <label for="pacote100">Quantidade:</label>
-        <input type="number" id="pacote100" value="0" oninput="updatePacoteQuantidades(100, this.value)"><br>
-        <p>Preço com desconto: $82.00</p>
-        <p>Total: R$<span id="totalR100">0.00</span> / $<span id="totalD100">0.00</span></p>
+        <h2>Pacotes Avançados</h2>
+        <!-- Pacote de $50 -->
+        <label for="pacote50">$50:</label>
+        <input type="number" id="pacote50" value="0" oninput="updatePacoteQuantidades(50, this.value)">
+        <p>Desconto: $41.00</p>
+        <p>R$<span id="totalR50">0.00</span> / $<span id="totalD50">0.00</span></p>
+        <!-- Pacote de $100 -->
+        <label for="pacote100">$100:</label>
+        <input type="number" id="pacote100" value="0" oninput="updatePacoteQuantidades(100, this.value)">
+        <p>Desconto: $82.00</p>
+        <p>R$<span id="totalR100">0.00</span> / $<span id="totalD100">0.00</span></p>
     </div>
 
     <!-- Seção de Login -->
     <div class="panel">
-        <h2>Login e Informações</h2>
+        <h2>Login</h2>
         <label for="login">Login:</label>
-        <input type="text" id="login"><br>
+        <input type="text" id="login">
         <label for="password">Password:</label>
-        <input type="text" id="password"><br>
+        <input type="text" id="password">
         <label for="nickname">Nickname:</label>
-        <input type="text" id="nickname"><br>
+        <input type="text" id="nickname">
         <label for="level">Level:</label>
-        <input type="text" id="level"><br>
+        <input type="text" id="level">
         <label for="server">Server:</label>
-        <input type="text" id="server"><br>
+        <input type="text" id="server">
     </div>
 
     <!-- Seção Total -->
     <div class="panel">
-        <h2>Total de Todos os Pacotes</h2>
-        <p>Total de Pacotes: R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
-        <button onclick="copiarInformacoes()">Copiar total + login</button>
+        <h2>Total Pacotes</h2>
+        <p>R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
+        <button onclick="copiarInformacoes()">Copiar</button>
     </div>
 
     <!-- Informações de Pagamento -->
     <div class="panel panel-large">
-        <h2>Informações de Pagamento</h2>
+        <h2>Pagamento</h2>
         <p><strong>Pix:</strong> CELULAR 14988231270 Nome: DAOSHI TRADE</p>
         <p><strong>Binance:</strong> estrela203@hotmail.com</p>
-        <p><strong>Observação:</strong> Para Diamantes, cada 1000 = R$30 ou USDT 5.20.</p>
+        <p><strong>Obs:</strong> Diamantes: 1000 = R$30 ou USDT 5.20.</p>
     </div>
 </body>
 </html>
