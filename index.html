@@ -113,7 +113,6 @@
     
     .tooltip { position: fixed; background: rgba(0,0,0,0.9); color: white; padding: 10px 15px; border-radius: 8px; font-size: 0.9rem; z-index: 1000; pointer-events: none; opacity: 0; transition: opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     
-    /* ESTILOS PARA O BLOCO DE INSTRUÇÕES */
     .instruction-block { margin-top: 25px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border-top: 2px solid var(--gold-color); }
     .instruction-block h3 { border-bottom: none; margin-top: 0; margin-bottom: 12px; padding-bottom: 0; color: var(--gold-color); }
     .instruction-block ol { list-style: none; padding-left: 0; counter-reset: instruction-counter; }
@@ -121,6 +120,15 @@
     .instruction-block li::before { counter-increment: instruction-counter; content: counter(instruction-counter); position: absolute; left: 0; top: 0; width: 22px; height: 22px; background: var(--gold-color); color: var(--primary-color); border-radius: 50%; font-weight: bold; text-align: center; line-height: 22px; font-size: 0.85rem; }
     .instruction-block a { color: var(--accent-color); font-weight: bold; text-decoration: none; transition: color 0.2s ease; }
     .instruction-block a:hover { color: var(--gold-color); text-decoration: underline; }
+    
+    .sound-control { position: fixed; bottom: 15px; right: 15px; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 50%; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 1px solid var(--panel-border); }
+    .sound-icon { width: 20px; height: 20px; fill: var(--text-color); }
+    .muted .sound-icon .wave { opacity: 0.3; }
+    .muted .sound-icon .line { opacity: 1; }
+    .volume-slider { position: fixed; bottom: 15px; right: 60px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 15px; z-index: 1000; display: flex; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 1px solid var(--panel-border); transform: translateX(150px); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+    .volume-slider.active { transform: translateX(0); opacity: 1; }
+    .volume-slider input { width: 80px; margin: 0 8px; }
+    .volume-label { color: var(--text-color); font-size: 0.75rem; margin-right: 4px; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -233,6 +241,11 @@
   </div>
 
   <div class="tooltip" id="tooltip"></div>
+  <audio id="backgroundMusic" src="https://github.com/maykbrito/devlinks/raw/main/assets/music.mp3" loop></audio>
+  <div class="sound-control" id="soundControl">
+    <svg class="sound-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor"/><path class="wave" d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" fill="none"/><path class="wave" d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" fill="none"/><line class="line" x1="23" y1="1" x2="1" y2="23" stroke="currentColor" stroke-width="2" style="opacity: 0;"/></svg>
+  </div>
+  <div class="volume-slider" id="volumeSlider"><span class="volume-label">Volume:</span><input type="range" min="0" max="100" value="70" id="volumeRange"></div>
 
 <script>
     const CONFIG = {
@@ -251,6 +264,9 @@
         }
     };
 
+    let audioContext, masterGainNode, backgroundMusic;
+    let isMuted = true;
+    let audioInitialized = false;
     let exchangeRate = CONFIG.defaultExchangeRate;
     let twdQuantities = {};
     let topUpQuantities = {};
@@ -261,6 +277,7 @@
       updateAllCalculations();
       setupEventListeners();
       atualizarCotacaoDolar();
+      document.getElementById("soundControl").classList.add("muted");
     };
     
     function showTab(tabName) {
@@ -268,6 +285,7 @@
         document.getElementById(tabName + 'Tab').classList.add('active');
         document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
         document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
+        playSound('click');
     }
 
     function buildTwdPacks() {
@@ -300,12 +318,76 @@
     function updateTwdQuantity(amount, quantity) {
         twdQuantities[amount] = parseInt(quantity) || 0;
         updateAllCalculations();
+        playSound('type');
     }
     function updateTopUpQuantity(amount, quantity) {
         topUpQuantities[amount] = parseInt(quantity) || 0;
         updateAllCalculations();
+        playSound('type');
     }
     
+    function initAudio() {
+        if (audioInitialized) return;
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            masterGainNode = audioContext.createGain();
+            masterGainNode.gain.value = 0.7;
+            masterGainNode.connect(audioContext.destination);
+            backgroundMusic = document.getElementById("backgroundMusic");
+            backgroundMusic.volume = 0.35;
+            audioInitialized = true;
+            toggleMute();
+        } catch (e) { console.error("AudioContext não pôde ser iniciado.", e); }
+    }
+    function playSound(name) {
+        if (!audioInitialized || isMuted) return;
+        const noteMap = { click: 800, hover: 600, success: 1200, type: 440 + Math.random() * 100 };
+        const gainMap = { click: 0.1, hover: 0.05, success: 0.2, type: 0.03 };
+        const duration = name === "success" ? 0.3 : 0.1;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.type = name === "click" ? "triangle" : "sine";
+        oscillator.frequency.value = noteMap[name];
+        gainNode.gain.value = gainMap[name];
+        oscillator.connect(gainNode).connect(masterGainNode);
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+        oscillator.stop(audioContext.currentTime + duration);
+    }
+    function toggleMute() {
+        if (!audioInitialized) initAudio();
+        isMuted = !isMuted;
+        document.getElementById("soundControl").classList.toggle("muted", isMuted);
+        if (backgroundMusic) {
+            isMuted ? backgroundMusic.pause() : backgroundMusic.play().catch(e => {});
+        }
+        playSound('click');
+    }
+    function setupEventListeners() {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener("keydown", () => playSound("type"));
+            if (input.type === 'number') {
+                input.addEventListener('focus', () => { if (input.value === '0') input.value = ''; });
+                input.addEventListener('blur', () => { if (input.value === '') input.value = '0'; });
+            }
+        });
+        document.querySelectorAll("button").forEach(el => {
+            el.addEventListener("click", () => playSound("click"));
+            el.addEventListener("mouseenter", () => playSound("hover"));
+        });
+        const soundControl = document.getElementById("soundControl");
+        const volumeSlider = document.getElementById("volumeSlider");
+        soundControl.addEventListener("click", toggleMute);
+        soundControl.addEventListener("mouseenter", () => volumeSlider.classList.add("active"));
+        volumeSlider.addEventListener("mouseleave", () => volumeSlider.classList.remove("active"));
+        document.getElementById("volumeRange").addEventListener("input", function() {
+            if (audioInitialized) {
+                const vol = this.value / 100;
+                masterGainNode.gain.value = vol;
+                if(backgroundMusic) backgroundMusic.volume = vol * 0.5;
+            }
+        });
+    }
     function showTooltip(message, event) {
         const tooltip = document.getElementById("tooltip");
         tooltip.textContent = message;
@@ -314,15 +396,6 @@
         tooltip.style.top = `${rect.top - tooltip.offsetHeight - 10}px`;
         tooltip.style.opacity = "1";
         setTimeout(() => { tooltip.style.opacity = "0"; }, 2000);
-    }
-    
-    function setupEventListeners() {
-        document.querySelectorAll('input').forEach(input => {
-            if (input.type === 'number') {
-                input.addEventListener('focus', () => { if (input.value === '0') input.value = ''; });
-                input.addEventListener('blur', () => { if (input.value === '') input.value = '0'; });
-            }
-        });
     }
 
     function updateAllCalculations() {
@@ -431,7 +504,10 @@
         texto += `Nome: DAOSHI TRADE\n\n`;
         texto += `Binance (Email): estrela203@hotmail.com\n`;
         
-        navigator.clipboard.writeText(texto).then(() => showTooltip("Resumo copiado!", event));
+        navigator.clipboard.writeText(texto).then(() => {
+            showTooltip("Resumo copiado!", event);
+            playSound("success");
+        });
     }
 
     function copyForCardPayment(event) {
@@ -460,7 +536,10 @@
         texto += "  - Nome completo:\n  - CPF:\n  - Telefone (WhatsApp):\n  - Rede social ativa:\n\n";
         texto += "❗️Atenção: Em casos de suspeita de fraude ou tentativa de golpe, temos processos internos e legais para identificar e responsabilizar o comprador.";
         
-        navigator.clipboard.writeText(texto).then(() => showTooltip("Informações para cartão copiadas!", event));
+        navigator.clipboard.writeText(texto).then(() => {
+            showTooltip("Informações para cartão copiadas!", event);
+            playSound("success");
+        });
     }
 </script>
 </body>
